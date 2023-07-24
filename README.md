@@ -12,7 +12,7 @@ This client is under development, you can use it, but it may have bugs.
 To install this dependency, just add the following line to your Cargo.toml manifest.
 
 ```toml
-sozu-client = "^0.1.0"
+sozu-client = "^0.2.0"
 ```
 
 # Usage
