@@ -20,6 +20,8 @@ pub enum Error {
     Convert(Box<dyn std::error::Error + Send>),
     #[error("failed to convert path to utf-8 string, there is incompatibility, {0}")]
     PathIsInvalid(String),
+    #[error("failed to canonicalize the command socket path, {0}")]
+    Canonicalize(std::io::Error),
 }
 
 // -----------------------------------------------------------------------------
@@ -42,4 +44,25 @@ pub fn try_from(path: &PathBuf) -> Result<Config, Error> {
     ConfigBuilder::new(file_config, config_path)
         .into_config()
         .map_err(|err| Error::Convert(err.into()))
+}
+
+/// Canonicalize command socket.
+/// Take the path of the configuration and the configuration to retrieve the
+/// canonical path of the command socket.
+#[tracing::instrument(skip_all)]
+pub fn canonicalize_command_socket(path: &PathBuf, config: &Config) -> Result<PathBuf, Error> {
+    match &config.command_socket {
+        // if the socket path is absolute do nothing.
+        socket if socket.starts_with('/') => Ok(PathBuf::from(socket)),
+        // else canonicalize the socket path
+        socket => {
+            let mut socket_path = PathBuf::from(socket)
+                .parent()
+                .ok_or_else(|| Error::PathIsInvalid(path.display().to_string()))?
+                .to_owned();
+
+            socket_path.push(path);
+            socket_path.canonicalize().map_err(Error::Canonicalize)
+        }
+    }
 }
