@@ -1,6 +1,6 @@
 ---
 name: CI
-on: [ push, pull_request ]
+on: [push, pull_request]
 jobs:
   test:
     name: Test
@@ -10,7 +10,7 @@ jobs:
       matrix:
         experimental: [false]
         rust:
-		      - 1.66.1
+          - 1.66.1
           - stable
           - beta
         include:
@@ -56,4 +56,3 @@ jobs:
         with:
           command: doc
           args: --verbose
-...
