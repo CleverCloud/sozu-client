@@ -1,0 +1,23 @@
+[package]
+name = "sozu-client"
+homepage = "https://github.com/CleverCloud/sozu-client"
+description = "This library provides a client to interact with Sōzu."
+documentation = "https://github.com/CleverCloud/sozu-client/blob/main/README.md"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.66.1"
+license-file = "LICENSE"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "^0.1.72"
+bb8 = "^0.8.1"
+config = "^0.13.3"
+mio = { version = "^0.8.8", default-features = false, features = ["os-poll", "os-ext", "net"] }
+serde_json = "^1.0.103"
+sozu-command-lib = "^0.15.2"
+tempdir = "^0.3.7"
+thiserror = "^1.0.44"
+tokio = { version = "^1.29.1", features = ["time", "fs", "io-util"] }
+tracing = "^0.1.37"
