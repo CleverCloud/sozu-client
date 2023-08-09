@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 
 use config::{ConfigError, File};
-use sozu_command_lib::config::{Config, ConfigBuilder};
+use sozu_command_lib::config::{Config, ConfigBuilder, ConfigError as ConfigBuilderError};
 
 // -----------------------------------------------------------------------------
 // Error
@@ -17,7 +17,7 @@ pub enum Error {
     #[error("failed to deserialize configuration keys-values into internal structure, {0}")]
     Deserialize(ConfigError),
     #[error("failed to convert configuration into internal representation structure, {0}")]
-    Convert(Box<dyn std::error::Error + Send>),
+    Convert(ConfigBuilderError),
     #[error("failed to convert path to utf-8 string, there is incompatibility, {0}")]
     PathIsInvalid(String),
     #[error("failed to canonicalize the command socket path, {0}")]
@@ -43,7 +43,7 @@ pub fn try_from(path: &PathBuf) -> Result<Config, Error> {
 
     ConfigBuilder::new(file_config, config_path)
         .into_config()
-        .map_err(|err| Error::Convert(err.into()))
+        .map_err(Error::Convert)
 }
 
 /// Canonicalize command socket.

@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 use bb8::ManageConnection;
 use sozu_command_lib::{
-    channel::Channel,
+    channel::{Channel, ChannelError},
     config::Config,
     proto::command::{Request, Response},
 };
@@ -26,7 +26,7 @@ pub enum Error {
     #[error("socket is unhealthy, {0}")]
     SocketError(std::io::Error),
     #[error("failed to set blocking the socket, {0}")]
-    Blocking(Box<dyn std::error::Error + Send>),
+    Blocking(ChannelError),
 }
 
 // -----------------------------------------------------------------------------
@@ -97,9 +97,7 @@ impl ManageConnection for ConnectionManager {
 
         let mut channel = Channel::new(sock, self.opts.buffer_size, self.opts.max_buffer_size);
 
-        channel
-            .blocking()
-            .map_err(|err| Error::Blocking(err.into()))?;
+        channel.blocking().map_err(Error::Blocking)?;
 
         Ok(channel)
     }

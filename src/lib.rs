@@ -5,6 +5,7 @@
 
 use bb8::Pool;
 use sozu_command_lib::{
+    channel::ChannelError,
     proto::command::{request::RequestType, Request, Response, ResponseStatus},
     request::WorkerRequest,
 };
@@ -34,9 +35,9 @@ pub enum Error {
     #[error("failed to get connection to socket, {0}")]
     GetConnection(bb8::RunError<channel::Error>),
     #[error("failed to send request to Sōzu, {0}")]
-    Send(Box<dyn std::error::Error + Send>),
+    Send(ChannelError),
     #[error("failed to read response from Sōzu, {0}")]
-    Receive(Box<dyn std::error::Error + Send>),
+    Receive(ChannelError),
     #[error("got an invalid status code, {0}")]
     InvalidStatusCode(i32),
     #[error("failed to execute request on Sōzu")]
@@ -93,13 +94,11 @@ impl Sender for Client {
         conn.write_message(&Request {
             request_type: Some(request),
         })
-        .map_err(|err| Error::Send(err.into()))?;
+        .map_err(Error::Send)?;
 
         loop {
             trace!("Read request to Sōzu");
-            let response = conn
-                .read_message()
-                .map_err(|err| Error::Receive(err.into()))?;
+            let response = conn.read_message().map_err(Error::Receive)?;
 
             let status = ResponseStatus::from_i32(response.status)
                 .ok_or_else(|| Error::InvalidStatusCode(response.status))?;
