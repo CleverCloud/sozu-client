@@ -100,8 +100,8 @@ impl Sender for Client {
             trace!("Read request to Sōzu");
             let response = conn.read_message().map_err(Error::Receive)?;
 
-            let status = ResponseStatus::from_i32(response.status)
-                .ok_or_else(|| Error::InvalidStatusCode(response.status))?;
+            let status = ResponseStatus::try_from(response.status)
+                .map_err(|_| Error::InvalidStatusCode(response.status))?;
 
             match status {
                 ResponseStatus::Processing => continue,
