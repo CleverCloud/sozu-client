@@ -1,11 +1,10 @@
-//! # Sōzu client
+//! # Unpooled module
 //!
-//! This library provides a client to interact with Sōzu.
-//! The client is able to do one-time request or send batches.
+//! This module provides an unpooled client to interact with Sōzu.
+//! It is provided to directly connect to the proxy for debugging purposes.
 
-use bb8::Pool;
 use sozu_command_lib::{
-    channel::ChannelError,
+    channel::{Channel, ChannelError},
     proto::command::{request::RequestType, Request, Response, ResponseStatus},
     request::WorkerRequest,
 };
@@ -13,29 +12,20 @@ use tempdir::TempDir;
 use tokio::{
     fs::File,
     io::{AsyncWriteExt, BufWriter},
+    sync::Mutex,
     task::{spawn_blocking as blocking, JoinError},
 };
-use tracing::trace;
+use tracing::{debug, trace};
 
-use crate::channel::{ConnectionManager, ConnectionProperties};
-
-pub mod channel;
-pub mod config;
-pub mod socket;
-#[cfg(feature = "unpooled")]
-pub mod unpooled;
+use crate::{channel::ConnectionProperties, socket, Sender};
 
 // -----------------------------------------------------------------------------
 // Error
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("failed to create connection pool to Sōzu's socket")]
-    CreatePool(channel::Error),
     #[error("failed to execute blocking task, {0}")]
     Join(JoinError),
-    #[error("failed to get connection to socket, {0}")]
-    GetConnection(bb8::RunError<channel::Error>),
     #[error("failed to send request to Sōzu, {0}")]
     Send(ChannelError),
     #[error("failed to read response from Sōzu, {0}")]
@@ -54,6 +44,10 @@ pub enum Error {
     Write(std::io::Error),
     #[error("failed to flush worker request buffer, {0}")]
     Flush(std::io::Error),
+    #[error("failed to connect to socket, {0}")]
+    Connect(socket::Error),
+    #[error("failed to set blocking the socket, {0}")]
+    Blocking(ChannelError),
 }
 
 impl From<JoinError> for Error {
@@ -64,23 +58,10 @@ impl From<JoinError> for Error {
 }
 
 // -----------------------------------------------------------------------------
-// Sender
-
-#[async_trait::async_trait]
-pub trait Sender {
-    type Error;
-
-    async fn send(&self, request: RequestType) -> Result<Response, Self::Error>;
-
-    async fn send_all(&self, requests: &[RequestType]) -> Result<Response, Self::Error>;
-}
-
-// -----------------------------------------------------------------------------
 // Client
 
-#[derive(Clone, Debug)]
 pub struct Client {
-    pool: Pool<ConnectionManager>,
+    channel: Mutex<Channel<Request, Response>>,
 }
 
 #[async_trait::async_trait]
@@ -90,7 +71,7 @@ impl Sender for Client {
     #[tracing::instrument(skip_all)]
     async fn send(&self, request: RequestType) -> Result<Response, Self::Error> {
         trace!("Retrieve a connection to Sōzu's socket");
-        let mut conn = self.pool.get().await.map_err(Error::GetConnection)?;
+        let mut conn = self.channel.lock().await;
 
         trace!("Send request to Sōzu");
         conn.write_message(&Request {
@@ -153,21 +134,24 @@ impl Sender for Client {
     }
 }
 
-impl From<Pool<ConnectionManager>> for Client {
-    #[tracing::instrument(skip_all)]
-    fn from(pool: Pool<ConnectionManager>) -> Self {
-        Self { pool }
-    }
-}
-
 impl Client {
-    #[tracing::instrument]
-    pub async fn try_new(opts: ConnectionProperties) -> Result<Self, Error> {
-        let pool = Pool::builder()
-            .build(ConnectionManager::new(opts))
-            .await
-            .map_err(Error::CreatePool)?;
+    #[tracing::instrument(skip_all)]
+    pub async fn connect(props: ConnectionProperties) -> Result<Self, Error> {
+        debug!(
+            path = props.socket.display().to_string(),
+            "Connect to Sōzu' socket"
+        );
 
-        Ok(Self::from(pool))
+        let sock = socket::connect(&props.socket)
+            .await
+            .map_err(Error::Connect)?;
+
+        let mut channel = Channel::new(sock, props.buffer_size, props.max_buffer_size);
+
+        channel.blocking().map_err(Error::Blocking)?;
+
+        Ok(Self {
+            channel: Mutex::new(channel),
+        })
     }
 }

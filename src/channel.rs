@@ -10,7 +10,7 @@ use sozu_command_lib::{
     config::Config,
     proto::command::{Request, Response},
 };
-use tracing::debug;
+use tracing::{debug, error};
 
 use crate::socket;
 
@@ -109,7 +109,10 @@ impl ManageConnection for ConnectionManager {
         //
         // We only check that the socket behind the connection has no error.
         match conn.sock.take_error() {
-            Ok(Some(err)) | Err(err) => Err(Error::SocketError(err)),
+            Ok(Some(err)) | Err(err) => {
+                error!(error = err.to_string(), "connexion to sōzu has errors");
+                Err(Error::SocketError(err))
+            }
             Ok(None) => Ok(()),
         }
     }
@@ -120,7 +123,10 @@ impl ManageConnection for ConnectionManager {
         //
         // We only check that the socket behind the connection has no error.
         match conn.sock.take_error() {
-            Ok(Some(_)) | Err(_) => true,
+            Ok(Some(err)) | Err(err) => {
+                error!(error = err.to_string(), "connexion to sōzu has errors");
+                true
+            }
             Ok(None) => false,
         }
     }
