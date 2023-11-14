@@ -112,7 +112,7 @@ impl ManageConnection for ConnectionManager {
             Ok(Some(err)) | Err(err) => {
                 error!(error = err.to_string(), "connexion to sōzu has errors");
                 Err(Error::SocketError(err))
-            },
+            }
             Ok(None) => Ok(()),
         }
     }
@@ -126,7 +126,7 @@ impl ManageConnection for ConnectionManager {
             Ok(Some(err)) | Err(err) => {
                 error!(error = err.to_string(), "connexion to sōzu has errors");
                 true
-            },
+            }
             Ok(None) => false,
         }
     }
