@@ -5,8 +5,7 @@
 
 use sozu_command_lib::{
     channel::{Channel, ChannelError},
-    proto::command::{request::RequestType, Request, Response, ResponseStatus},
-    request::WorkerRequest,
+    proto::command::{request::RequestType, Request, Response, ResponseStatus, WorkerRequest},
 };
 use tempdir::TempDir;
 use tokio::{
