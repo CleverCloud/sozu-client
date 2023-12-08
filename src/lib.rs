@@ -30,20 +30,20 @@ pub mod unpooled;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("failed to create connection pool to Sōzu's socket")]
+    #[error("failed to create connection pool over unix socket, {0}")]
     CreatePool(channel::Error),
     #[error("failed to execute blocking task, {0}")]
     Join(JoinError),
     #[error("failed to get connection to socket, {0}")]
     GetConnection(bb8::RunError<channel::Error>),
-    #[error("failed to send request to Sōzu, {0}")]
+    #[error("failed to send request, {0}")]
     Send(ChannelError),
-    #[error("failed to read response from Sōzu, {0}")]
+    #[error("failed to read response, {0}")]
     Receive(ChannelError),
     #[error("got an invalid status code, {0}")]
     InvalidStatusCode(i32),
-    #[error("failed to execute request on Sōzu")]
-    Failure(Response),
+    #[error("failed to execute request, got status '{0}', {1}")]
+    Failure(String, String, Response),
     #[error("failed to create temporary directory, {0}")]
     CreateTempDir(std::io::Error),
     #[error("failed to create temporary file, {0}")]
@@ -60,6 +60,13 @@ impl From<JoinError> for Error {
     #[tracing::instrument]
     fn from(err: JoinError) -> Self {
         Self::Join(err)
+    }
+}
+
+impl Error {
+    #[tracing::instrument]
+    pub fn is_recoverable(&self) -> bool {
+        !matches!(self, Self::Send(_) | Self::Receive(_) | Self::CreatePool(_) | Self::GetConnection(_))
     }
 }
 
@@ -108,7 +115,7 @@ impl Sender for Client {
             match status {
                 ResponseStatus::Processing => continue,
                 ResponseStatus::Failure => {
-                    return Err(Error::Failure(response));
+                    return Err(Error::Failure(status.as_str_name().to_string(), response.message.to_string().to_lowercase(), response));
                 }
                 ResponseStatus::Ok => {
                     return Ok(response);
