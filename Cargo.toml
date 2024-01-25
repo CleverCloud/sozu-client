@@ -11,15 +11,15 @@ license-file = "LICENSE"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "^0.1.74"
+async-trait = "^0.1.77"
 bb8 = "^0.8.1"
 config = "^0.13.4"
 mio = { version = "^0.8.10", default-features = false, features = ["os-poll", "os-ext", "net"] }
-serde_json = "^1.0.108"
-sozu-command-lib = "^0.15.18"
+serde_json = "^1.0.111"
+sozu-command-lib = "^0.15.19"
 tempdir = "^0.3.7"
-thiserror = "^1.0.50"
-tokio = { version = "^1.35.0", features = ["time", "fs", "io-util"] }
+thiserror = "^1.0.56"
+tokio = { version = "^1.35.1", features = ["time", "fs", "io-util"] }
 tracing = "^0.1.40"
 
 [features]
