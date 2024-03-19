@@ -35,8 +35,8 @@ pub enum Error {
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ConnectionProperties {
     pub socket: PathBuf,
-    pub buffer_size: usize,
-    pub max_buffer_size: usize,
+    pub buffer_size: u64,
+    pub max_buffer_size: u64,
 }
 
 impl From<&Config> for ConnectionProperties {
@@ -63,7 +63,7 @@ impl TryFrom<&PathBuf> for ConnectionProperties {
 
 impl ConnectionProperties {
     #[tracing::instrument]
-    fn new(socket: PathBuf, buffer_size: usize, max_buffer_size: usize) -> Self {
+    fn new(socket: PathBuf, buffer_size: u64, max_buffer_size: u64) -> Self {
         Self {
             socket,
             buffer_size,

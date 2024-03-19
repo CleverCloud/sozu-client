@@ -6,8 +6,7 @@
 use bb8::Pool;
 use sozu_command_lib::{
     channel::ChannelError,
-    proto::command::{request::RequestType, Request, Response, ResponseStatus},
-    request::WorkerRequest,
+    proto::command::{request::RequestType, Request, Response, ResponseStatus, WorkerRequest},
 };
 use tempdir::TempDir;
 use tokio::{
