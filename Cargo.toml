@@ -1,6 +1,6 @@
 [package]
 name = "sozu-client"
-homepage = "https://github.com/CleverCloud/sozu-client"
+repository = "https://github.com/CleverCloud/sozu-client"
 description = "This library provides a client to interact with Sōzu."
 documentation = "https://github.com/CleverCloud/sozu-client/blob/main/README.md"
 version = "0.4.0"
