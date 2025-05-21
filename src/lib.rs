@@ -6,13 +6,12 @@
 use bb8::Pool;
 use sozu_command_lib::{
     channel::ChannelError,
-    proto::command::{request::RequestType, Request, Response, ResponseStatus, WorkerRequest},
+    proto::command::{Request, Response, ResponseStatus, WorkerRequest, request::RequestType},
 };
-use tempdir::TempDir;
 use tokio::{
     fs::File,
     io::{AsyncWriteExt, BufWriter},
-    task::{spawn_blocking as blocking, JoinError},
+    task::{JoinError, spawn_blocking as blocking},
 };
 use tracing::trace;
 
@@ -65,7 +64,10 @@ impl From<JoinError> for Error {
 impl Error {
     #[tracing::instrument]
     pub fn is_recoverable(&self) -> bool {
-        !matches!(self, Self::Send(_) | Self::Receive(_) | Self::CreatePool(_) | Self::GetConnection(_))
+        !matches!(
+            self,
+            Self::Send(_) | Self::Receive(_) | Self::CreatePool(_) | Self::GetConnection(_)
+        )
     }
 }
 
@@ -114,7 +116,11 @@ impl Sender for Client {
             match status {
                 ResponseStatus::Processing => continue,
                 ResponseStatus::Failure => {
-                    return Err(Error::Failure(status.as_str_name().to_string(), response.message.to_string().to_lowercase(), response));
+                    return Err(Error::Failure(
+                        status.as_str_name().to_string(),
+                        response.message.to_string().to_lowercase(),
+                        response,
+                    ));
                 }
                 ResponseStatus::Ok => {
                     return Ok(response);
@@ -127,9 +133,7 @@ impl Sender for Client {
     async fn send_all(&self, requests: &[RequestType]) -> Result<Response, Self::Error> {
         // -------------------------------------------------------------------------
         // Create temporary folder and writer to batch requests
-        let tmpdir =
-            blocking(|| TempDir::new(env!("CARGO_PKG_NAME")).map_err(Error::CreateTempDir))
-                .await??;
+        let tmpdir = blocking(|| tempfile::tempdir().map_err(Error::CreateTempDir)).await??;
 
         let path = tmpdir.path().join("requests.json");
         let mut writer = BufWriter::new(File::create(&path).await.map_err(Error::CreateTempFile)?);
