@@ -7,7 +7,6 @@ use sozu_command_lib::{
     channel::{Channel, ChannelError},
     proto::command::{request::RequestType, Request, Response, ResponseStatus, WorkerRequest},
 };
-use tempdir::TempDir;
 use tokio::{
     fs::File,
     io::{AsyncWriteExt, BufWriter},
@@ -102,7 +101,7 @@ impl Sender for Client {
         // -------------------------------------------------------------------------
         // Create temporary folder and writer to batch requests
         let tmpdir =
-            blocking(|| TempDir::new(env!("CARGO_PKG_NAME")).map_err(Error::CreateTempDir))
+            blocking(|| tempfile::tempdir().map_err(Error::CreateTempDir))
                 .await??;
 
         let path = tmpdir.path().join("requests.json");
