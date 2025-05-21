@@ -5,17 +5,17 @@
 
 use sozu_command_lib::{
     channel::{Channel, ChannelError},
-    proto::command::{request::RequestType, Request, Response, ResponseStatus, WorkerRequest},
+    proto::command::{Request, Response, ResponseStatus, WorkerRequest, request::RequestType},
 };
 use tokio::{
     fs::File,
     io::{AsyncWriteExt, BufWriter},
     sync::Mutex,
-    task::{spawn_blocking as blocking, JoinError},
+    task::{JoinError, spawn_blocking as blocking},
 };
 use tracing::{debug, trace};
 
-use crate::{channel::ConnectionProperties, socket, Sender};
+use crate::{Sender, channel::ConnectionProperties, socket};
 
 // -----------------------------------------------------------------------------
 // Error
@@ -100,9 +100,7 @@ impl Sender for Client {
     async fn send_all(&self, requests: &[RequestType]) -> Result<Response, Self::Error> {
         // -------------------------------------------------------------------------
         // Create temporary folder and writer to batch requests
-        let tmpdir =
-            blocking(|| tempfile::tempdir().map_err(Error::CreateTempDir))
-                .await??;
+        let tmpdir = blocking(|| tempfile::tempdir().map_err(Error::CreateTempDir)).await??;
 
         let path = tmpdir.path().join("requests.json");
         let mut writer = BufWriter::new(File::create(&path).await.map_err(Error::CreateTempFile)?);
