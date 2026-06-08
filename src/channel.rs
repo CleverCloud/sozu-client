@@ -80,7 +80,6 @@ pub struct ConnectionManager {
     opts: ConnectionProperties,
 }
 
-#[async_trait::async_trait]
 impl ManageConnection for ConnectionManager {
     type Connection = Channel<Request, Response>;
     type Error = Error;

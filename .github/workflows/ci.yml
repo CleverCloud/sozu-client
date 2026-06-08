@@ -10,7 +10,7 @@ jobs:
       matrix:
         experimental: [false]
         rust:
-          - 1.85.1
+          - 1.88.0
           - stable
           - beta
         include:
@@ -31,12 +31,12 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: ${{ matrix.features }}
+          args: --all-features
       - name: Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --verbose ${{ matrix.features }}
+          args: --verbose --all-features
   doc:
     name: Build documentation
     runs-on: ubuntu-latest
