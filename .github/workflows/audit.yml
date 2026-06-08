@@ -1,0 +1,32 @@
+---
+name: Security audit
+on:
+  push:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+  pull_request:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+  schedule:
+    # Run weekly so newly-disclosed advisories are caught even without code changes.
+    - cron: "0 6 * * 1"
+  # Allow running the audit on demand from the Actions tab.
+  workflow_dispatch:
+jobs:
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: Generate lockfile
+        # Cargo.lock is gitignored for this library, so resolve one to audit.
+        run: cargo generate-lockfile
+      - name: Audit dependencies
+        run: cargo audit
