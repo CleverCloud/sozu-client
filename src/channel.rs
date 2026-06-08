@@ -61,17 +61,6 @@ impl TryFrom<&PathBuf> for ConnectionProperties {
     }
 }
 
-impl ConnectionProperties {
-    #[tracing::instrument]
-    fn new(socket: PathBuf, buffer_size: u64, max_buffer_size: u64) -> Self {
-        Self {
-            socket,
-            buffer_size,
-            max_buffer_size,
-        }
-    }
-}
-
 // -----------------------------------------------------------------------------
 // ConnectionManager
 
