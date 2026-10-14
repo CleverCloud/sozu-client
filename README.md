@@ -12,13 +12,15 @@ This client is under development, you can use it, but it may have bugs.
 To install this dependency, just add the following line to your Cargo.toml manifest.
 
 ```toml
-sozu-client = "^0.6.0"
-sozu-command-lib = "^2.3.0"
+sozu-client = "^0.6.1"
+sozu-command-lib = "^2.3.1"
 ```
 
-Version 0.6.0 targets Sōzu 2.3 and requires Rust 1.93.1 or newer. Keep
-`sozu-client` and `sozu-command-lib` on compatible versions so request types
-are shared by both crates.
+Version 0.6.1 targets Sōzu 2.3.1 or newer and requires Rust 1.93.1 or newer.
+Keep `sozu-client` and `sozu-command-lib` on compatible versions so request
+types are shared by both crates. Deploy the Sōzu 2.3.1 runtime itself to obtain
+the worker configuration rollback when a frontend order is refused; the client
+continues to return that refusal as an explicit error.
 
 # Usage
 
