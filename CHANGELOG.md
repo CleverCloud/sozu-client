@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.1 - 2026-10-14
+
+- Require `sozu-command-lib` 2.3.1 to align the client's protocol types with
+  Sōzu 2.3.1. Deploy the Sōzu 2.3.1 runtime itself to obtain the fix that
+  restores worker configuration state when a frontend order is refused.
+- Verify that published Sōzu 2.3.1 accepts client requests and that refusal
+  responses remain explicit `Error::Failure` values for pooled and unpooled
+  clients.
+
 ## 0.6.0 - 2026-10-14
 
 - Update `sozu-command-lib` to 2.3.0 so Sōzu 2.3 configuration and command
