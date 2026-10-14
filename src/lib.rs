@@ -30,11 +30,11 @@ pub mod unpooled;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("failed to create connection pool over unix socket, {0}")]
-    CreatePool(channel::Error),
+    CreatePool(Box<channel::Error>),
     #[error("failed to execute blocking task, {0}")]
     Join(JoinError),
     #[error("failed to get connection to socket, {0}")]
-    GetConnection(bb8::RunError<channel::Error>),
+    GetConnection(Box<bb8::RunError<channel::Error>>),
     #[error("failed to send request, {0}")]
     Send(ChannelError),
     #[error("failed to read response, {0}")]
@@ -42,7 +42,7 @@ pub enum Error {
     #[error("got an invalid status code, {0}")]
     InvalidStatusCode(i32),
     #[error("failed to execute request, got status '{0}', {1}")]
-    Failure(String, String, Response),
+    Failure(String, String, Box<Response>),
     #[error("failed to create temporary directory, {0}")]
     CreateTempDir(std::io::Error),
     #[error("failed to create temporary file, {0}")]
@@ -99,7 +99,11 @@ impl Sender for Client {
     #[tracing::instrument(skip_all)]
     async fn send(&self, request: RequestType) -> Result<Response, Self::Error> {
         trace!("Retrieve a connection to Sōzu's socket");
-        let mut conn = self.pool.get().await.map_err(Error::GetConnection)?;
+        let mut conn = self
+            .pool
+            .get()
+            .await
+            .map_err(|error| Error::GetConnection(Box::new(error)))?;
 
         trace!("Send request to Sōzu");
         conn.write_message(&Request {
@@ -120,7 +124,7 @@ impl Sender for Client {
                     return Err(Error::Failure(
                         status.as_str_name().to_string(),
                         response.message.to_string().to_lowercase(),
-                        response,
+                        Box::new(response),
                     ));
                 }
                 ResponseStatus::Ok => {
@@ -177,7 +181,7 @@ impl Client {
         let pool = Pool::builder()
             .build(ConnectionManager::new(opts))
             .await
-            .map_err(Error::CreatePool)?;
+            .map_err(|error| Error::CreatePool(Box::new(error)))?;
 
         Ok(Self::from(pool))
     }

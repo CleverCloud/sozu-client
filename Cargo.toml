@@ -3,27 +3,30 @@ name = "sozu-client"
 repository = "https://github.com/CleverCloud/sozu-client"
 description = "This library provides a client to interact with Sōzu."
 documentation = "https://github.com/CleverCloud/sozu-client/blob/main/README.md"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2024"
-rust-version = "1.91.0"
+rust-version = "1.93.1"
 license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "^0.1.89"
+async-trait = "^0.1.92"
 bb8 = "^0.9.1"
-config = "^0.15.25"
-mio = { version = "^1.2.2", default-features = false, features = ["os-poll", "os-ext", "net"] }
-serde_json = "^1.0.150"
-sozu-command-lib = "2.2.0"
+config = "^0.15.27"
+mio = { version = "^1.2.4", default-features = false, features = ["os-poll", "os-ext", "net"] }
+serde_json = "^1.0.154"
+sozu-command-lib = "^2.3.0"
 
 tempfile = "^3.27.0"
-thiserror = "^2.0.18"
-tokio = { version = "^1.52.3", features = ["time", "fs", "io-util"] }
+thiserror = "^2.0.21"
+tokio = { version = "^1.53.3", features = ["time", "fs", "io-util"] }
 tracing = "^0.1.44"
 
 [features]
 default = []
 
 unpooled = ["tokio/sync"]
+
+[dev-dependencies]
+tokio = { version = "^1.53.3", features = ["rt", "time"] }

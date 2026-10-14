@@ -10,7 +10,7 @@ jobs:
       matrix:
         experimental: [false]
         rust:
-          - 1.91.0
+          - 1.93.1
           - stable
           - beta
         include:

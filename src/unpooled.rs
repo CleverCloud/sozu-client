@@ -31,7 +31,7 @@ pub enum Error {
     #[error("got an invalid status code, {0}")]
     InvalidStatusCode(i32),
     #[error("failed to execute request on Sōzu")]
-    Failure(Response),
+    Failure(Box<Response>),
     #[error("failed to create temporary directory, {0}")]
     CreateTempDir(std::io::Error),
     #[error("failed to create temporary file, {0}")]
@@ -87,7 +87,7 @@ impl Sender for Client {
             match status {
                 ResponseStatus::Processing => continue,
                 ResponseStatus::Failure => {
-                    return Err(Error::Failure(response));
+                    return Err(Error::Failure(Box::new(response)));
                 }
                 ResponseStatus::Ok => {
                     return Ok(response);
