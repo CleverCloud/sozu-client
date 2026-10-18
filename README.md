@@ -12,15 +12,27 @@ This client is under development, you can use it, but it may have bugs.
 To install this dependency, just add the following line to your Cargo.toml manifest.
 
 ```toml
-sozu-client = "^0.6.1"
-sozu-command-lib = "^2.3.1"
+sozu-client = "^0.6.2"
+sozu-command-lib = "^2.3.2"
 ```
 
-Version 0.6.1 targets Sōzu 2.3.1 or newer and requires Rust 1.93.1 or newer.
-Keep `sozu-client` and `sozu-command-lib` on compatible versions so request
-types are shared by both crates. Deploy the Sōzu 2.3.1 runtime itself to obtain
-the worker configuration rollback when a frontend order is refused; the client
-continues to return that refusal as an explicit error.
+Version 0.6.2 requires `sozu-command-lib` 2.3.2, the Sōzu 2.3.2 protocol
+types; it makes no promise about newer Sōzu versions.
+It requires Rust 1.93.1 or newer. Keep `sozu-client` and `sozu-command-lib` on
+compatible versions so request types are shared by both crates. Deploy the Sōzu
+2.3.2 runtime itself to obtain its reconciliation and durable-state fixes.
+Direct `send` returns an explicit Sōzu `Failure` as an error with the full
+`Response`. `send_all` writes a `LoadState` batch, which the 2.3.2 runtime can
+finish successfully while skipping a refused or invalid entry: add each cluster
+before its backends, and use `send` when you need a per-order `Failure`.
+This generic library neither reads TOML value files, orchestrates the protected
+health-check protocol, checks worker capability, nor provides a security
+engine: the caller owns protected request types and mixed-version preflight,
+and the CLI and runtime behavior belongs to Sōzu. Before enabling the
+health-check `port` or `headers` fields, upgrade the Sōzu main process, every
+worker, and the Sōzu CLI. Header values stay outside ordinary config and state
+types; a `FileHealthCheckHeader { name, value_file }` only references the file
+holding one. See the changelog for the contract and the new public fields.
 
 # Usage
 
