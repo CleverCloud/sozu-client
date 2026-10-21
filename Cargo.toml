@@ -3,7 +3,7 @@ name = "sozu-client"
 repository = "https://github.com/CleverCloud/sozu-client"
 description = "This library provides a client to interact with Sōzu."
 documentation = "https://github.com/CleverCloud/sozu-client/blob/main/README.md"
-version = "0.6.2"
+version = "0.7.0"
 edition = "2024"
 rust-version = "1.93.1"
 license-file = "LICENSE"
@@ -20,7 +20,7 @@ sozu-command-lib = "^2.3.2"
 
 tempfile = "^3.27.0"
 thiserror = "^2.0.21"
-tokio = { version = "^1.53.3", features = ["time", "fs", "io-util"] }
+tokio = { version = "^1.53.3", features = ["time", "fs", "io-util", "net"] }
 tracing = "^0.1.44"
 
 [features]
