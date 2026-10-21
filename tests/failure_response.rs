@@ -56,6 +56,7 @@ fn failure_server(path: &Path) -> JoinHandle<()> {
 
 fn runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
+        .enable_io()
         .enable_time()
         .build()
         .expect("test runtime must build")

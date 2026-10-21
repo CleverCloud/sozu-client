@@ -12,11 +12,11 @@ This client is under development, you can use it, but it may have bugs.
 To install this dependency, just add the following line to your Cargo.toml manifest.
 
 ```toml
-sozu-client = "^0.6.2"
+sozu-client = "^0.7.0"
 sozu-command-lib = "^2.3.2"
 ```
 
-Version 0.6.2 requires `sozu-command-lib` 2.3.2, the Sōzu 2.3.2 protocol
+Version 0.7.0 requires `sozu-command-lib` 2.3.2, the Sōzu 2.3.2 protocol
 types; it makes no promise about newer Sōzu versions.
 It requires Rust 1.93.1 or newer. Keep `sozu-client` and `sozu-command-lib` on
 compatible versions so request types are shared by both crates. Deploy the Sōzu
@@ -43,13 +43,29 @@ let opts = ConnectionProperties::try_from(&PathBuf::from("path/to/sozu-configura
     .expect("the Sōzu configuration must be valid");
 let client = Client::try_new(opts)
     .await
-    .expect("the Sōzu command socket must be reachable");
+    .expect("the Sōzu client pool must be created")
+    .with_request_timeout(std::time::Duration::from_secs(10));
 
 client
     .send(RequestType::LoadState("path/to/state.json".to_owned()))
     .await
     .expect("Sōzu must accept the state file");
 ```
+
+`send` and `send_all` use one absolute deadline for the complete operation:
+waiting for a pooled connection, retrying the socket connection, writing the
+request, receiving every `Processing` response, and receiving the terminal
+response. The default is 30 seconds; configure it per client with
+`Client::with_request_timeout`. Tokio's runtime must have its I/O driver
+enabled. A timeout means the request may already have reached Sōzu, so
+`Error::Timeout` is not recoverable and must not be retried blindly. The client
+discards the connection after a timeout or cancellation so a late response
+cannot be mistaken for the result of a later request.
+
+The `unpooled` feature applies the same request deadline. Its
+`Client::connect_with_timeout` also bounds the initial connection. If a request
+is interrupted, that client reports `unpooled::Error::Unavailable` on later
+requests because its stream can no longer be synchronized safely.
 
 When rolling back a controller built with an older `sozu-command-lib`, avoid
 rewriting clusters that use Sōzu 2.3 fields: an older `AddCluster` order

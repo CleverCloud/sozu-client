@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.7.0 - 2026-10-21
+
+- Drive Sōzu command channels through Tokio's non-blocking `AsyncFd` readiness
+  instead of executing blocking socket reads and writes on an async worker.
+  Tokio runtimes using the client must enable their I/O driver.
+- Apply one configurable absolute deadline to every `send` and `send_all`. It
+  covers the pool queue, socket connection and retry, complete write, every
+  `Processing` response, and terminal response. The default is 30 seconds and
+  `Client::with_request_timeout` changes it per client.
+- Return `Error::Timeout` when the deadline expires and classify it as
+  non-recoverable because Sōzu may already have applied the request. A pooled
+  connection is discarded after every timeout, cancellation, or incomplete
+  exchange, preventing a late response from satisfying a later request.
+- Apply the same transport and deadline to the `unpooled` client. The new
+  `connect_with_timeout` also bounds its initial connection; an interrupted
+  exchange consumes the ambiguous connection and later calls return
+  `unpooled::Error::Unavailable`.
+- Change `ConnectionManager::Connection` from the raw Sōzu `Channel` to the
+  opaque `sozu_client::channel::Connection`. Code using `Client`,
+  `Pool<ConnectionManager>`, and `Client::from(pool)` is unchanged; code that
+  directly manipulated a dedicated pooled `Channel` must migrate to the
+  client API. The channel setup errors `Blocking` and unpooled `Blocking` are
+  replaced by `NonBlocking` / `Register` and `Prepare`, respectively, and
+  `channel::Error::Load` now boxes its configuration error.
+
 ## 0.6.2 - 2026-10-18
 
 - Require `sozu-command-lib` 2.3.2 to align the client's protocol types with
