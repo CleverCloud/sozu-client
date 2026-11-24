@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.1 - 2026-11-24
 
 - Require `sozu-command-lib` 2.3.7 to align the client's protocol types with
   Sōzu 2.3.7.
