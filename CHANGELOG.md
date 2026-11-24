@@ -6,6 +6,8 @@
   Sōzu 2.3.7.
 - Raise the minimum supported Rust version to 1.95.0, matching
   `sozu-command-lib` 2.3.7.
+- Guarantee that an expired request deadline wins over a stream of already
+  buffered `Processing` responses.
 
 ## 0.7.0 - 2026-10-21
 

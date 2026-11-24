@@ -147,7 +147,7 @@ impl Client {
                 ResponseStatus::Processing => {
                     // Buffered responses can otherwise keep this future ready
                     // forever and prevent the outer deadline from being polled.
-                    tokio::task::coop::consume_budget().await;
+                    tokio::task::yield_now().await;
                     continue;
                 }
                 ResponseStatus::Failure => {
