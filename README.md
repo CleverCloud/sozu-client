@@ -13,14 +13,13 @@ To install this dependency, just add the following line to your Cargo.toml manif
 
 ```toml
 sozu-client = "^0.7.0"
-sozu-command-lib = "^2.3.2"
+sozu-command-lib = "^2.3.7"
 ```
 
-Version 0.7.0 requires `sozu-command-lib` 2.3.2, the Sōzu 2.3.2 protocol
+The current branch requires `sozu-command-lib` 2.3.7, the Sōzu 2.3.7 protocol
 types; it makes no promise about newer Sōzu versions.
-It requires Rust 1.93.1 or newer. Keep `sozu-client` and `sozu-command-lib` on
-compatible versions so request types are shared by both crates. Deploy the Sōzu
-2.3.2 runtime itself to obtain its reconciliation and durable-state fixes.
+It requires Rust 1.95.0 or newer. Keep `sozu-client` and `sozu-command-lib` on
+compatible versions so request types are shared by both crates.
 Direct `send` returns an explicit Sōzu `Failure` as an error with the full
 `Response`. `send_all` writes a `LoadState` batch, which the 2.3.2 runtime can
 finish successfully while skipping a refused or invalid entry: add each cluster
