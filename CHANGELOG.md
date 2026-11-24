@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Require `sozu-command-lib` 2.3.7 to align the client's protocol types with
+  Sōzu 2.3.7.
+- Raise the minimum supported Rust version to 1.95.0, matching
+  `sozu-command-lib` 2.3.7.
+
 ## 0.7.0 - 2026-10-21
 
 - Drive Sōzu command channels through Tokio's non-blocking `AsyncFd` readiness
