@@ -12,11 +12,11 @@ This client is under development, you can use it, but it may have bugs.
 To install this dependency, just add the following line to your Cargo.toml manifest.
 
 ```toml
-sozu-client = "^0.7.0"
+sozu-client = "^0.7.1"
 sozu-command-lib = "^2.3.7"
 ```
 
-The current branch requires `sozu-command-lib` 2.3.7, the Sōzu 2.3.7 protocol
+Version 0.7.1 requires `sozu-command-lib` 2.3.7, the Sōzu 2.3.7 protocol
 types; it makes no promise about newer Sōzu versions.
 It requires Rust 1.95.0 or newer. Keep `sozu-client` and `sozu-command-lib` on
 compatible versions so request types are shared by both crates.
